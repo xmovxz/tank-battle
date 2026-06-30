@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T1-T4 层级会议问题管理系统</title>
+<style>
+/* ========== CSS Reset ========== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;line-height:1.6;color:#1f2937;background:#f3f4f6;min-height:100vh}
+
+/* ========== Design Tokens ========== */
+:root{
+  --primary:#1a73e8;--primary-light:#e8f0fe;--primary-dark:#1557b0;
+  --success:#0d904f;--success-light:#e6f4ea;
+  --warning:#e37400;--warning-light:#fef7e0;
+  --danger:#d93025;--danger-light:#fce8e6;
+  --gray-50:#f9fafb;--gray-100:#f3f4f6;--gray-200:#e5e7eb;--gray-300:#d1d5db;--gray-400:#9ca3af;--gray-500:#6b7280;--gray-600:#4b5563;--gray-700:#374151;--gray-800:#1f2937;--gray-900:#111827;
+  --radius-sm:4px;--radius:6px;--radius-lg:8px;--radius-xl:12px;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);--shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);--shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);--shadow-lg:0 10px 15px rgba(0,0,0,.1),0 4px 6px rgba(0,0,0,.05);--shadow-xl:0 20px 25px rgba(0,0,0,.1),0 10px 10px rgba(0,0,0,.04);
+  --transition:150ms ease;
+}
+
+/* ========== Typography ========== */
+h1{font-size:1.5rem;font-weight:700}h2{font-size:1.25rem;font-weight:600}h3{font-size:1.1rem;font-weight:600}h4{font-size:1rem;font-weight:600}
+a{color:var(--primary);text-decoration:none}a:hover{text-decoration:underline}
+
+/* ========== Layout ========== */
+.app-container{max-width:1280px;margin:0 auto;padding:0 16px}
+.app-header{background:#fff;border-bottom:1px solid var(--gray-200);position:sticky;top:0;z-index:100;box-shadow:var(--shadow-sm)}
+.app-header .app-container{display:flex;align-items:center;justify-content:space-between;height:56px}
+.app-logo{display:flex;align-items:center;gap:10px;font-size:1.15rem;font-weight:700;color:var(--gray-800)}
+.app-logo .logo-icon{width:32px;height:32px;background:var(--primary);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem}
+.app-nav{display:flex;gap:4px}
+.app-nav a{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius);color:var(--gray-600);font-size:.875rem;font-weight:500;transition:all var(--transition);text-decoration:none}
+.app-nav a:hover,.app-nav a.active{background:var(--primary-light);color:var(--primary);text-decoration:none}
+.app-nav a .nav-icon{font-size:1.1rem}
+.app-main{padding:20px 0 80px}
+.app-footer{text-align:center;padding:16px;color:var(--gray-400);font-size:.75rem;border-top:1px solid var(--gray-200);background:#fff}
+
+/* ========== Cards ========== */
+.card{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--gray-200)}
+.card-header{padding:14px 20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:.95rem}
+.card-body{padding:20px}
+.card+.card{margin-top:16px}
+
+/* ========== Buttons ========== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 16px;font-size:.875rem;font-weight:500;border-radius:var(--radius);border:1px solid transparent;cursor:pointer;transition:all var(--transition);white-space:nowrap;font-family:inherit;line-height:1.5;text-decoration:none}
+.btn:hover{text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-dark);border-color:var(--primary-dark)}
+.btn-success{background:var(--success);color:#fff}
+.btn-success:hover{background:#0b7a42}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-warning:hover{background:#c55d00}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover{background:#b3261e}
+.btn-outline{background:#fff;color:var(--gray-700);border-color:var(--gray-300)}
+.btn-outline:hover{background:var(--gray-50);border-color:var(--gray-400)}
+.btn-ghost{background:transparent;color:var(--gray-600)}
+.btn-ghost:hover{background:var(--gray-100)}
+.btn-sm{padding:4px 10px;font-size:.8rem}
+.btn-lg{padding:10px 20px;font-size:.95rem}
+.btn-icon{padding:6px 8px}
+.btn:disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
+.btn-group{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ========== Badges ========== */
+.badge{display:inline-flex;align-items:center;padding:2px 10px;font-size:.75rem;font-weight:600;border-radius:9999px;line-height:1.6}
+.badge-open{background:#dbeafe;color:#1e40af}
+.badge-closed{background:#d1fae5;color:#065f46}
+.badge-t1{background:#e0e7ff;color:#3730a3}
+.badge-t1p{background:#dbeafe;color:#1e40af}
+.badge-t2{background:#e0f2fe;color:#075985}
+.badge-t3{background:#fef3c7;color:#92400e}
+.badge-t4{background:#fee2e2;color:#991b1b}
+.badge-low{background:#e8f5e9;color:#2e7d32}
+.badge-medium{background:#fff3e0;color:#e65100}
+.badge-high{background:#fce4ec;color:#c62828}
+.badge-critical{background:#fbe9e7;color:#bf360c;font-weight:700}
+
+/* ========== Forms ========== */
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:.875rem;font-weight:600;color:var(--gray-700);margin-bottom:6px}
+.form-label .required{color:var(--danger);margin-left:2px}
+.form-input,.form-select,.form-textarea{width:100%;padding:9px 12px;font-size:.875rem;font-family:inherit;border:1px solid var(--gray-300);border-radius:var(--radius);background:#fff;color:var(--gray-800);transition:border-color var(--transition);outline:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(26,115,232,.12)}
+.form-input.error,.form-select.error,.form-textarea.error{border-color:var(--danger)}
+.form-error{font-size:.8rem;color:var(--danger);margin-top:4px;display:none}
+.form-error.show{display:block}
+.form-textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-hint{font-size:.8rem;color:var(--gray-400);margin-top:4px}
+
+/* ========== Tables ========== */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.875rem}
+thead th{background:var(--gray-50);padding:10px 14px;text-align:left;font-weight:600;color:var(--gray-600);border-bottom:2px solid var(--gray-200);white-space:nowrap;cursor:pointer;user-select:none;transition:background var(--transition)}
+thead th:hover{background:var(--gray-100)}
+thead th .sort-icon{margin-left:4px;font-size:.7rem;color:var(--gray-400)}
+thead th.sorted .sort-icon{color:var(--primary)}
+tbody td{padding:10px 14px;border-bottom:1px solid var(--gray-100);color:var(--gray-700)}
+tbody tr{cursor:pointer;transition:background var(--transition)}
+tbody tr:hover{background:var(--primary-light)}
+tbody tr.clickable:hover{background:var(--primary-light)}
+
+/* ========== Modals ========== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+.modal-overlay.hidden{display:none}
+.modal-content{background:#fff;border-radius:var(--radius-xl);box-shadow:var(--shadow-xl);width:100%;max-width:520px;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.modal-header h3{font-size:1.05rem}
+.modal-close{width:32px;height:32px;border:none;background:transparent;font-size:1.25rem;cursor:pointer;border-radius:50%;color:var(--gray-400);display:flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.modal-close:hover{background:var(--gray-100);color:var(--gray-700)}
+.modal-body{padding:20px}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--gray-100);display:flex;justify-content:flex-end;gap:8px}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ========== Timeline ========== */
+.timeline{position:relative;padding-left:28px}
+.timeline::before{content:'';position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:var(--gray-200)}
+.timeline-item{position:relative;margin-bottom:20px}
+.timeline-item:last-child{margin-bottom:0}
+.timeline-dot{position:absolute;left:-22px;top:2px;width:12px;height:12px;border-radius:50%;border:2px solid var(--gray-300);background:#fff;z-index:1}
+.timeline-dot.create{background:var(--primary);border-color:var(--primary)}
+.timeline-dot.escalate{background:var(--warning);border-color:var(--warning)}
+.timeline-dot.close{background:var(--success);border-color:var(--success)}
+.timeline-dot.reopen{background:var(--primary);border-color:var(--primary)}
+.timeline-dot.comment{background:var(--gray-300);border-color:var(--gray-300)}
+.timeline-time{font-size:.75rem;color:var(--gray-400);margin-bottom:2px}
+.timeline-content{background:var(--gray-50);border-radius:var(--radius);padding:10px 14px;border:1px solid var(--gray-100)}
+.timeline-content .tl-action{font-weight:600;font-size:.85rem;margin-bottom:2px}
+.timeline-content .tl-detail{font-size:.8rem;color:var(--gray-500)}
+
+/* ========== Stat Cards ========== */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow);border:1px solid var(--gray-200);padding:20px;display:flex;align-items:center;gap:16px;transition:box-shadow var(--transition)}
+.stat-card:hover{box-shadow:var(--shadow-md)}
+.stat-icon{width:48px;height:48px;border-radius:var(--radius-lg);display:flex;align-items:center;justify-content:center;font-size:1.4rem;flex-shrink:0}
+.stat-icon.blue{background:#dbeafe;color:#1e40af}
+.stat-icon.green{background:#d1fae5;color:#065f46}
+.stat-icon.orange{background:#fef3c7;color:#92400e}
+.stat-icon.red{background:#fee2e2;color:#991b1b}
+.stat-icon.purple{background:#ede9fe;color:#5b21b6}
+.stat-value{font-size:1.75rem;font-weight:700;line-height:1.2}
+.stat-label{font-size:.8rem;color:var(--gray-500);margin-top:2px}
+
+/* ========== Bar Chart ========== */
+.bar-chart .bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bar-chart .bar-label{width:70px;font-size:.8rem;font-weight:600;text-align:right;color:var(--gray-600);flex-shrink:0}
+.bar-chart .bar-track{flex:1;height:24px;background:var(--gray-100);border-radius:12px;overflow:hidden;position:relative}
+.bar-chart .bar-fill{height:100%;border-radius:12px;transition:width .5s ease;min-width:2px;display:flex;align-items:center;padding-left:10px;font-size:.75rem;color:#fff;font-weight:600}
+.bar-chart .bar-count{width:40px;font-size:.85rem;font-weight:600;color:var(--gray-700);flex-shrink:0}
+.bar-fill.t1{background:linear-gradient(90deg,#6366f1,#818cf8)}
+.bar-fill.t1p{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
+.bar-fill.t2{background:linear-gradient(90deg,#0ea5e9,#38bdf8)}
+.bar-fill.t3{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.bar-fill.t4{background:linear-gradient(90deg,#ef4444,#f87171)}
+
+/* ========== Filter Bar ========== */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.filter-bar .form-input,.filter-bar .form-select{width:auto;min-width:130px}
+.filter-bar .search-input{flex:1;min-width:180px;max-width:320px}
+
+/* ========== Pagination ========== */
+.pagination{display:flex;align-items:center;justify-content:center;gap:4px;padding:16px 0}
+.pagination .page-btn{width:36px;height:36px;border:1px solid var(--gray-200);background:#fff;border-radius:var(--radius);cursor:pointer;font-size:.85rem;color:var(--gray-600);transition:all var(--transition);display:flex;align-items:center;justify-content:center}
+.pagination .page-btn:hover:not(.active):not(:disabled){background:var(--gray-50);border-color:var(--gray-300)}
+.pagination .page-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.pagination .page-btn:disabled{opacity:.35;cursor:default}
+.pagination .page-info{font-size:.8rem;color:var(--gray-500);padding:0 12px}
+
+/* ========== Bottom Nav (Mobile) ========== */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--gray-200);display:none;z-index:100;box-shadow:0 -2px 8px rgba(0,0,0,.06)}
+.bottom-nav .nav-items{display:flex}
+.bottom-nav .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;color:var(--gray-400);font-size:.7rem;font-weight:500;cursor:pointer;transition:color var(--transition);border:none;background:none;font-family:inherit}
+.bottom-nav .nav-item.active{color:var(--primary)}
+.bottom-nav .nav-item .nav-icon{font-size:1.3rem}
+
+/* ========== Empty State ========== */
+.empty-state{text-align:center;padding:48px 20px;color:var(--gray-400)}
+.empty-state .empty-icon{font-size:3rem;margin-bottom:12px}
+.empty-state p{margin-bottom:16px;font-size:.9rem}
+
+/* ========== Toast ========== */
+.toast-container{position:fixed;top:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:8px}
+.toast{padding:10px 18px;border-radius:var(--radius);font-size:.875rem;font-weight:500;color:#fff;box-shadow:var(--shadow-lg);animation:slideIn .3s ease;max-width:360px}
+.toast.success{background:var(--success)}
+.toast.error{background:var(--danger)}
+.toast.info{background:var(--primary)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ========== Info Grid ========== */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.info-item{}
+.info-item .info-label{font-size:.75rem;color:var(--gray-400);margin-bottom:2px}
+.info-item .info-value{font-size:.9rem;color:var(--gray-800);font-weight:500}
+
+/* ========== Comment Section ========== */
+.comment-list{margin-bottom:16px}
+.comment-item{padding:10px 14px;background:var(--gray-50);border-radius:var(--radius);margin-bottom:8px;border-left:3px solid var(--gray-200)}
+.comment-item .cmt-header{display:flex;justify-content:space-between;margin-bottom:4px}
+.comment-item .cmt-author{font-weight:600;font-size:.85rem}
+.comment-item .cmt-time{font-size:.75rem;color:var(--gray-400)}
+.comment-item .cmt-text{font-size:.875rem;color:var(--gray-600)}
+
+/* ========== Section Headers ========== */
+.section-title{font-size:.95rem;font-weight:600;color:var(--gray-700);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title::before{content:'';width:3px;height:16px;background:var(--primary);border-radius:2px}
+
+/* ========== Confirm Dialog ========== */
+.confirm-text{font-size:.9rem;color:var(--gray-600);line-height:1.6}
+.confirm-highlight{font-weight:600;color:var(--gray-800)}
+
+/* ========== Utilities ========== */
+.text-center{text-align:center}
+.text-right{text-align:right}
+.text-muted{color:var(--gray-400)}
+.text-sm{font-size:.8rem}
+.mt-1{margin-top:8px}.mt-2{margin-top:12px}.mt-3{margin-top:16px}.mt-4{margin-top:24px}
+.mb-1{margin-bottom:8px}.mb-2{margin-bottom:12px}.mb-3{margin-bottom:16px}.mb-4{margin-bottom:24px}
+.flex{display:flex}.flex-between{display:flex;justify-content:space-between;align-items:center}.flex-wrap{flex-wrap:wrap}.gap-1{gap:6px}.gap-2{gap:10px}.gap-3{gap:16px}
+.hidden{display:none!important}
+.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.clickable{cursor:pointer}
+.no-select{user-select:none}
+
+/* ========== Issue Detail Header ========== */
+.detail-header{margin-bottom:20px}
+.detail-header .back-btn{display:inline-flex;align-items:center;gap:4px;color:var(--gray-500);font-size:.85rem;margin-bottom:10px;cursor:pointer;background:none;border:none;font-family:inherit;padding:0}
+.detail-header .back-btn:hover{color:var(--primary)}
+.detail-header .detail-id{font-size:.8rem;color:var(--gray-400);margin-bottom:4px}
+.detail-header .detail-title{font-size:1.3rem;font-weight:700;color:var(--gray-800)}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+
+/* ========== Responsive ========== */
+@media(max-width:1024px){
+  .form-row{grid-template-columns:1fr}
+  .info-grid{grid-template-columns:1fr}
+  .filter-bar .search-input{max-width:none;flex:1 1 100%}
+}
+@media(max-width:768px){
+  .app-nav{display:none}
+  .bottom-nav{display:block}
+  .app-main{padding-bottom:100px}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .stat-card{padding:14px;gap:10px}
+  .stat-icon{width:36px;height:36px;font-size:1.1rem}
+  .stat-value{font-size:1.35rem}
+  .modal-content{max-width:100%;margin:0 8px;max-height:95vh}
+  .filter-bar .form-input,.filter-bar .form-select{min-width:100px}
+  thead th{padding:8px 10px;font-size:.8rem}
+  tbody td{padding:8px 10px;font-size:.8rem}
+  .bar-chart .bar-label{width:50px;font-size:.7rem}
+  .detail-actions .btn{font-size:.8rem;padding:6px 12px}
+}
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:1fr 1fr;gap:8px}
+  .stat-card{padding:10px;gap:8px}
+  .stat-icon{width:30px;height:30px;font-size:.9rem;border-radius:var(--radius-sm)}
+  .stat-value{font-size:1.2rem}
+  .btn-group{flex-direction:column;width:100%}
+  .btn-group .btn{width:100%}
+}
+
+/* ========== Print ========== */
+@media print{
+  .app-header,.bottom-nav,.app-footer,.detail-actions,.btn,.modal-overlay,.toast-container,.filter-bar,.pagination{display:none!important}
+  .app-main{padding:0}
+  .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+  body{background:#fff;font-size:12px}
+}
+
+/* ========== View Transitions ========== */
+.view{animation:fadeIn .2s ease}
+</style>
+</head>
+<body>
+
+<!-- ==================== HEADER ==================== -->
+<header class="app-header">
+  <div class="app-container">
+    <div class="app-logo">
+      <div class="logo-icon">📋</div>
+      <span>T1-T4 层级会议问题管理</span>
+    </div>
+    <nav class="app-nav" id="topNav">
+      <a href="#dashboard" data-nav="dashboard" class="active"><span class="nav-icon">📊</span> 仪表盘</a>
+      <a href="#list" data-nav="list"><span class="nav-icon">📋</span> 问题列表</a>
+      <a href="#create" data-nav="create"><span class="nav-icon">➕</span> 录入问题</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<main class="app-main" id="appMain">
+  <div class="app-container" id="viewContainer"></div>
+</main>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="app-footer">
+  T1-T4 层级会议问题管理系统 · 数据存储于浏览器本地 · 支持导出备份
+</footer>
+
+<!-- ==================== BOTTOM NAV (Mobile) ==================== -->
+<nav class="bottom-nav" id="bottomNav">
+  <div class="nav-items">
+    <button class="nav-item active" data-nav="dashboard"><span class="nav-icon">📊</span> 仪表盘</button>
+    <button class="nav-item" data-nav="list"><span class="nav-icon">📋</span> 问题列表</button>
+    <button class="nav-item" data-nav="create"><span class="nav-icon">➕</span> 录入</button>
+  </div>
+</nav>
+
+<!-- ==================== MODALS ==================== -->
+<div class="modal-overlay hidden" id="escalateModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>⬆️ 问题升级</h3>
+      <button class="modal-close" data-close="escalateModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-text mb-3" id="escalateInfo"></div>
+      <div class="form-group">
+        <label class="form-label">升级说明 <span class="required">*</span></label>
+        <textarea class="form-textarea" id="escalateComment" placeholder="请说明升级原因及需要上级协调处理的事项..."></textarea>
+        <div class="form-error" id="escalateError">请输入升级说明</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">操作人 <span class="required">*</span></label>
+        <input class="form-input" id="escalateOperator" placeholder="请输入操作人姓名">
+        <div class="form-error" id="escalateOpError">请输入操作人</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="escalateModal">取消</button>
+      <button class="btn btn-warning" id="confirmEscalate">确认升级</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="closeModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>✅ 问题闭环</h3>
+      <button class="modal-close" data-close="closeModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="confirm-text mb-3" id="closeInfo"></div>
+      <div class="form-group">
+        <label class="form-label">闭环原因 <span class="required">*</span></label>
+        <textarea class="form-textarea" id="closeReason" placeholder="请详细说明问题处理措施及闭环原因..."></textarea>
+        <div class="form-error" id="closeError">请输入闭环原因</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">操作人 <span class="required">*</span></label>
+        <input class="form-input" id="closeOperator" placeholder="请输入操作人姓名">
+        <div class="form-error" id="closeOpError">请输入操作人</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="closeModal">取消</button>
+      <button class="btn btn-success" id="confirmClose">确认闭环</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="exportModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>📦 数据导入/导出</h3>
+      <button class="modal-close" data-close="exportModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="mb-3">
+        <h4 class="mb-1">导出数据</h4>
+        <p class="text-sm text-muted mb-2">将所有问题数据导出为 JSON 文件，用于备份或迁移。</p>
+        <button class="btn btn-primary" id="exportBtn">📥 导出 JSON</button>
+      </div>
+      <hr style="border:0;border-top:1px solid var(--gray-200);margin:16px 0">
+      <div class="mb-3">
+        <h4 class="mb-1">导入数据</h4>
+        <p class="text-sm text-muted mb-2">从之前导出的 JSON 文件恢复数据。<strong>注意：新数据将与现有数据合并。</strong></p>
+        <input type="file" accept=".json" id="importFile" style="display:none">
+        <button class="btn btn-outline" id="importBtn">📤 选择文件导入</button>
+        <span id="importStatus" class="text-sm" style="margin-left:8px"></span>
+      </div>
+      <hr style="border:0;border-top:1px solid var(--gray-200);margin:16px 0">
+      <div>
+        <h4 class="mb-1" style="color:var(--danger)">⚠️ 危险操作</h4>
+        <p class="text-sm text-muted mb-2">清除所有问题数据，此操作不可恢复。</p>
+        <button class="btn btn-danger" id="clearAllBtn">🗑️ 清除所有数据</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="exportModal">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="confirmModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="confirmTitle">确认操作</h3>
+      <button class="modal-close" data-close="confirmModal">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p class="confirm-text" id="confirmText"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" data-close="confirmModal">取消</button>
+      <button class="btn btn-danger" id="confirmAction">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TOAST CONTAINER ==================== -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script>
+/* =================================================================
+   T1-T4 Hierarchical Meeting Issue Management System
+   ================================================================= */
+
+// ==================== CONSTANTS & ENUMS ====================
+const LEVELS = ['T1','T1P','T2','T3','T4'];
+const LEVEL_LABELS = {
+  T1:  'T1 班组',
+  T1P: 'T1 PLUS 车间主任',
+  T2:  'T2 厂部经理',
+  T3:  'T3 分管副总',
+  T4:  'T4 总经理'
+};
+const LEVEL_SHORT = { T1:'班组', T1P:'车间主任', T2:'厂部经理', T3:'分管副总', T4:'总经理' };
+const NEXT_LEVEL = { T1:'T1P', T1P:'T2', T2:'T3', T3:'T4', T4:null };
+
+const CATEGORIES = ['equipment','quality','safety','process','material','other'];
+const CATEGORY_LABELS = {
+  equipment:'设备异常', quality:'质量问题', safety:'安全隐患',
+  process:'工艺异常', material:'物料异常', other:'其他'
+};
+const SEVERITIES = ['low','medium','high','critical'];
+const SEVERITY_LABELS = { low:'低', medium:'中', high:'高', critical:'紧急' };
+const SOURCES = ['patrol','inspection','audit','incident','other'];
+const SOURCE_LABELS = {
+  patrol:'现场巡检', inspection:'质量检查', audit:'内部审核',
+  incident:'突发事件', other:'其他来源'
+};
+const HISTORY_ACTION_LABELS = {
+  create:'创建问题', escalate:'问题升级', close:'问题闭环',
+  reopen:'重新打开', comment:'添加评论', edit:'编辑问题'
+};
+
+// ==================== UTILITY FUNCTIONS ====================
+function formatDateTime(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function formatDate(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function nowISO() { return new Date().toISOString(); }
+
+function generateIssueId() {
+  const today = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const all = Store.getState().issues;
+  const todayIssues = all.filter(i => i.id && i.id.startsWith(`ISS-${today}`));
+  const seq = String(todayIssues.length + 1).padStart(3,'0');
+  return `ISS-${today}-${seq}`;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function debounce(fn, ms) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), ms);
+  };
+}
+
+// ==================== STORE ====================
+const Store = {
+  _state: {
+    issues: [],
+    view: 'dashboard',
+    detailId: null,
+    filters: { search:'', category:'', severity:'', level:'', status:'', dateFrom:'', dateTo:'' },
+    sort: { field:'createdAt', dir:'desc' },
+    page: 1,
+    perPage: 15,
+  },
+  _listeners: [],
+
+  getState() { return this._state; },
+
+  dispatch(action, payload) {
+    const s = this._state;
+    switch (action) {
+      case 'ISSUES_LOADED':
+        s.issues = payload;
+        break;
+      case 'ISSUE_CREATE':
+        s.issues.unshift(payload);
+        break;
+      case 'ISSUE_UPDATE':
+        s.issues = s.issues.map(i => i.id === payload.id ? payload : i);
+        break;
+      case 'ISSUE_DELETE':
+        s.issues = s.issues.filter(i => i.id !== payload);
+        break;
+      case 'IMPORT_DATA':
+        s.issues = [...payload, ...s.issues];
+        break;
+      case 'CLEAR_ALL':
+        s.issues = [];
+        break;
+      case 'NAVIGATE':
+        s.view = payload.view;
+        s.detailId = payload.detailId || null;
+        s.page = 1;
+        break;
+      case 'FILTER_SET':
+        Object.assign(s.filters, payload);
+        s.page = 1;
+        break;
+      case 'FILTER_RESET':
+        s.filters = { search:'', category:'', severity:'', level:'', status:'', dateFrom:'', dateTo:'' };
+        s.page = 1;
+        break;
+      case 'SORT_SET':
+        if (s.sort.field === payload) { s.sort.dir = s.sort.dir === 'asc' ? 'desc' : 'asc'; }
+        else { s.sort.field = payload; s.sort.dir = 'asc'; }
+        break;
+      case 'PAGE_SET':
+        s.page = payload;
+        break;
+    }
+    if (['ISSUE_CREATE','ISSUE_UPDATE','ISSUE_DELETE','IMPORT_DATA','CLEAR_ALL'].includes(action)) {
+      this.save();
+    }
+    this._listeners.forEach(fn => fn(action));
+  },
+
+  subscribe(fn) {
+    this._listeners.push(fn);
+    return () => { this._listeners = this._listeners.filter(f => f !== fn); };
+  },
+
+  load() {
+    try {
+      const raw = localStorage.getItem('tank-battle-issues');
+      let issues = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(issues)) issues = [];
+      if (issues.length === 0) {
+        issues = seedDemoData();
+        localStorage.setItem('tank-battle-issues', JSON.stringify(issues));
+      }
+      this.dispatch('ISSUES_LOADED', issues);
+    } catch (e) {
+      console.error('Failed to load data:', e);
+      this.dispatch('ISSUES_LOADED', seedDemoData());
+    }
+  },
+
+  save() {
+    try {
+      localStorage.setItem('tank-battle-issues', JSON.stringify(this._state.issues));
+    } catch (e) {
+      showToast('存储空间不足，请导出数据后清理旧数据', 'error');
+    }
+  }
+};
+
+// ==================== DEMO DATA SEEDING ====================
+function seedDemoData() {
+  const now = new Date();
+  const ago = (h, d) => {
+    const dt = new Date(now);
+    dt.setHours(dt.getHours() - h);
+    if (d) dt.setDate(dt.getDate() - d);
+    return dt.toISOString();
+  };
+
+  return [
+    {
+      id: 'ISS-20260630-001', createdAt: ago(2,0), title: 'A线3#传送带电机异常过热', description: '今日下午巡检发现A线3#传送带驱动电机表面温度达92°C（标准上限85°C），散热风扇运转正常但出风口有明显焦味。初步判断可能为轴承磨损导致负载增大，需进一步拆检确认。影响范围：A线传送带运行速度被迫降低30%，已影响后工序节拍。', category:'equipment', severity:'high', source:'patrol', reporter:'张工', currentLevel:'T2', originLevel:'T1', status:'open', closeLevel:null, closedAt:null, closedBy:null, closeReason:null,
+      history: [
+        { timestamp:ago(2,0), action:'create', fromLevel:null, toLevel:'T1', operator:'张工', comment:'巡检发现A线3#传送带电机异常过热，记录于T1班组会议' },
+        { timestamp:ago(1,0), action:'escalate', fromLevel:'T1', toLevel:'T1P', operator:'李班长', comment:'电机过热影响产线节拍，班组无法独立处理，需车间协调维修资源' },
+        { timestamp:ago(0,0), action:'escalate', fromLevel:'T1P', toLevel:'T2', operator:'王主任', comment:'车间维修班组已排查，确认需更换轴承总成，申请厂部协调备件采购' }
+      ],
+      comments: [
+        { id:'cmt-1', timestamp:ago(1,0), author:'刘维修', text:'已检查散热系统正常，轴承有异响，建议更换SKF 6205-2RS轴承总成' },
+        { id:'cmt-2', timestamp:ago(0,0), author:'王主任', text:'备件库存不足，已提交紧急采购申请，预计3天到货' }
+      ]
+    },
+    {
+      id: 'ISS-20260629-001', createdAt: ago(26,0), title: 'B区2号注塑机产品出现批量飞边', description: 'B区2号注塑机生产批次20260629-03的壳体零件出现批量飞边缺陷（抽检20件中8件不合格），模具合模线处毛刺超出标准0.15mm。初步排查模具温度偏低、锁模力不足。已隔离该批次产品120件待复检。', category:'quality', severity:'critical', source:'inspection', reporter:'陈质检', currentLevel:'T3', originLevel:'T1', status:'open', closeLevel:null, closedAt:null, closedBy:null, closeReason:null,
+      history: [
+        { timestamp:ago(26,0), action:'create', fromLevel:null, toLevel:'T1', operator:'陈质检', comment:'质量抽检发现注塑飞边缺陷，触发T1会议讨论' },
+        { timestamp:ago(24,0), action:'escalate', fromLevel:'T1', toLevel:'T1P', operator:'赵班长', comment:'缺陷批量性，怀疑工艺参数异常，升级至车间主任' },
+        { timestamp:ago(20,0), action:'escalate', fromLevel:'T1P', toLevel:'T2', operator:'钱主任', comment:'车间排查模具和控制参数，初步结论需工艺工程师介入' },
+        { timestamp:ago(8,0), action:'escalate', fromLevel:'T2', toLevel:'T3', operator:'孙经理', comment:'问题涉及工艺标准修订和模具维护计划调整，需分管副总协调' }
+      ],
+      comments: [
+        { id:'cmt-3', timestamp:ago(18,0), author:'周工艺', text:'检查发现模具温度设定偏低15°C，锁模力参数上次保养后未校准' }
+      ]
+    },
+    {
+      id: 'ISS-20260629-002', createdAt: ago(30,0), title: '仓库危化品存储区通风系统故障', description: '仓库C区危化品存储间排风系统2台风机中有1台停止运转，室内挥发性气体浓度监测值上升至警戒线80%。当前已开启备用通风窗口但效果有限。涉及丙酮、稀释剂等易燃溶剂存储安全。', category:'safety', severity:'critical', source:'patrol', reporter:'吴安全员', currentLevel:'T4', originLevel:'T1', status:'open', closeLevel:null, closedAt:null, closedBy:null, closeReason:null,
+      history: [
+        { timestamp:ago(30,0), action:'create', fromLevel:null, toLevel:'T1', operator:'吴安全员', comment:'安全巡检发现危化品区通风故障，立即上报' },
+        { timestamp:ago(29,0), action:'escalate', fromLevel:'T1', toLevel:'T1P', operator:'郑班长', comment:'安全隐患重大，立即升级' },
+        { timestamp:ago(28,0), action:'escalate', fromLevel:'T1P', toLevel:'T2', operator:'冯主任', comment:'需紧急采购风机备件，同时评估临时安全措施' },
+        { timestamp:ago(24,0), action:'escalate', fromLevel:'T2', toLevel:'T3', operator:'蒋经理', comment:'影响范围涉及全厂安全合规，需副总级协调资源' },
+        { timestamp:ago(10,0), action:'escalate', fromLevel:'T3', toLevel:'T4', operator:'沈副总', comment:'涉及重大安全隐患及应急预算审批，升级至总经理决策' }
+      ],
+      comments: [
+        { id:'cmt-4', timestamp:ago(25,0), author:'吴安全员', text:'已设置临时防爆通风机，但需24小时人员值守监控' },
+        { id:'cmt-5', timestamp:ago(12,0), author:'沈副总', text:'已联系供应商紧急供货，预计明日上午可到货安装' }
+      ]
+    },
+    {
+      id: 'ISS-20260628-001', createdAt: ago(50,0), title: '涂装线废气处理装置效率下降', description: '涂装车间废气处理RTO装置热效率由正常95%下降至82%，VOC排放浓度接近排放限值90%。自查发现蓄热陶瓷体有局部堵塞，需停机清理。涉及环保合规风险。', category:'equipment', severity:'high', source:'patrol', reporter:'韩技术员', currentLevel:'T2', originLevel:'T1P', status:'open', closeLevel:null, closedAt:null, closedBy:null, closeReason:null,
+      history: [
+        { timestamp:ago(50,0), action:'create', fromLevel:null, toLevel:'T1P', operator:'韩技术员', comment:'涂装车间主任直接录入，RTO效率下降涉及环保合规' },
+        { timestamp:ago(44,0), action:'escalate', fromLevel:'T1P', toLevel:'T2', operator:'杨主任', comment:'清理需停机3天，影响涂装产能，需厂部协调生产排程' }
+      ],
+      comments: []
+    },
+    {
+      id: 'ISS-20260628-002', createdAt: ago(52,0), title: '装配线气动扳手扭力不稳定', description: '装配C线工位5气动扳手输出扭力波动大（标准45±3Nm，实际38-52Nm），导致螺栓拧紧不合格率上升至5%。已排查供气管路压力正常，怀疑扳手内部磨损。影响发动机装配质量。', category:'equipment', severity:'medium', source:'inspection', reporter:'黄工', currentLevel:'T1', originLevel:'T1', status:'closed', closeLevel:'T1', closedAt:ago(20,0), closedBy:'黄工', closeReason:'更换气动扳手后扭力恢复正常，连续抽检200件全部合格。班组已将该扳手列入周检重点。',
+      history: [
+        { timestamp:ago(52,0), action:'create', fromLevel:null, toLevel:'T1', operator:'黄工', comment:'发现装配线气动扳手扭力异常' },
+        { timestamp:ago(20,0), action:'close', fromLevel:'T1', toLevel:null, operator:'黄工', comment:'更换扳手后扭力恢复正常，班组级别闭环处置' }
+      ],
+      comments: [
+        { id:'cmt-6', timestamp:ago(40,0), author:'黄工', text:'暂时更换备用扳手，旧扳手送修。备用扳手已验证扭力合格' }
+      ]
+    },
+    {
+      id: 'ISS-20260627-001', createdAt: ago(76,1), title: '原材料钢板厚度超差', description: '供应批号ST-20260625的2.0mm冷轧钢板实测厚度1.82-1.95mm，低于标准下限1.95mm。已影响冲压车间3个批次产品，部分冲压件出现开裂。来料检验环节未检出。', category:'material', severity:'high', source:'inspection', reporter:'曹质检', currentLevel:'T3', originLevel:'T1', status:'closed', closeLevel:'T3', closedAt:ago(24,0), closedBy:'沈副总', closeReason:'供应商已确认偏差原因（轧制参数偏移），承诺赔偿已造成损失并更换合格板材。已修订来料检验标准增加厚度抽检频次，并对该供应商列入重点监控名单。',
+      history: [
+        { timestamp:ago(76,1), action:'create', fromLevel:null, toLevel:'T1', operator:'曹质检', comment:'冲压车间反馈原材料问题' },
+        { timestamp:ago(70,1), action:'escalate', fromLevel:'T1', toLevel:'T1P', operator:'彭班长', comment:'涉及供应商来料问题，班组无法处理' },
+        { timestamp:ago(60,1), action:'escalate', fromLevel:'T1P', toLevel:'T2', operator:'鲁主任', comment:'涉及供应链管理，需厂部与采购协调' },
+        { timestamp:ago(40,1), action:'escalate', fromLevel:'T2', toLevel:'T3', operator:'韦经理', comment:'涉及供应商评估和来料检验体系优化，需分管副总决策' },
+        { timestamp:ago(24,0), action:'close', fromLevel:'T3', toLevel:null, operator:'沈副总', comment:'供应商赔付方案确认，来料检验标准已修订，问题闭环' }
+      ],
+      comments: [
+        { id:'cmt-7', timestamp:ago(50,1), author:'马采购', text:'已联系供应商，对方确认是轧制产线参数异常，愿意承担损失' }
+      ]
+    },
+    {
+      id: 'ISS-20260627-002', createdAt: ago(80,1), title: '焊接机器人工作站路径偏移', description: '焊接D区2#机器人焊接路径X轴偏移约1.5mm，导致焊道位置不准。已手动修正但需重新标定零点。影响焊接质量稳定性，本批次20件产品需100%复检。', category:'process', severity:'medium', source:'patrol', reporter:'丁工', currentLevel:'T1P', originLevel:'T1', status:'closed', closeLevel:'T1P', closedAt:ago(48,0), closedBy:'鲁主任', closeReason:'机器人已重新标定零点并通过精度验证，焊接路径恢复正常。车间主任安排技术员每周进行机器人精度点检。',
+      history: [
+        { timestamp:ago(80,1), action:'create', fromLevel:null, toLevel:'T1', operator:'丁工', comment:'焊接机器人路径偏移发现' },
+        { timestamp:ago(72,1), action:'escalate', fromLevel:'T1', toLevel:'T1P', operator:'袁班长', comment:'需车间协调设备技术员进行系统标定' },
+        { timestamp:ago(48,0), action:'close', fromLevel:'T1P', toLevel:null, operator:'鲁主任', comment:'标定完成，精度恢复。车间主任级闭环' }
+      ],
+      comments: [
+        { id:'cmt-8', timestamp:ago(60,1), author:'邓技术', text:'零点偏移原因为上周更换焊枪后未重新校准TCP点' }
+      ]
+    },
+    {
+      id: 'ISS-20260626-001', createdAt: ago(100,2), title: '空压机房冷却水循环泵异响', description: '空压机房2#冷却水循环泵运行时有周期性金属撞击声，振动值超标准1.8倍。初步判断叶轮不平衡或轴承损坏。该泵为空压机主要冷却水源，故障将导致空压机连锁停机。', category:'equipment', severity:'high', source:'patrol', reporter:'林工', currentLevel:'T1P', originLevel:'T1', status:'open', closeLevel:null, closedAt:null, closedBy:null, closeReason:null,
+      history: [
+        { timestamp:ago(100,2), action:'create', fromLevel:null, toLevel:'T1', operator:'林工', comment:'空压机房巡检发现冷却水泵异常' },
+        { timestamp:ago(90,2), action:'escalate', fromLevel:'T1', toLevel:'T1P', operator:'何班长', comment:'涉及公共设施动力源，班组无法处置' }
+      ],
+      comments: []
+    },
+    {
+      id: 'ISS-20260626-002', createdAt: ago(104,2), title: '夜班人员未按规定佩戴防静电手环', description: '安全巡查发现SMT车间夜班3名操作员未佩戴防静电手环作业，违反ESD管理规定。已当场纠正但需加强培训和管理措施。静电放电可能导致PCB元件隐性损伤。', category:'safety', severity:'low', source:'audit', reporter:'魏安全员', currentLevel:'T1', originLevel:'T1', status:'closed', closeLevel:'T1', closedAt:ago(80,2), closedBy:'魏安全员', closeReason:'涉事人员已完成ESD培训并通过考核，班组已将防静电手环佩戴纳入班前会检查项。整改完成。',
+      history: [
+        { timestamp:ago(104,2), action:'create', fromLevel:null, toLevel:'T1', operator:'魏安全员', comment:'内部审核发现ESD违规' },
+        { timestamp:ago(80,2), action:'close', fromLevel:'T1', toLevel:null, operator:'魏安全员', comment:'培训完成，检查机制已建立，班组级闭环' }
+      ],
+      comments: [
+        { id:'cmt-9', timestamp:ago(90,2), author:'魏安全员', text:'已安排本周五进行ESD专题培训，相关3人必须参加' }
+      ]
+    },
+    {
+      id: 'ISS-20260625-001', createdAt: ago(130,3), title: '成品仓库温湿度超标导致包装受潮', description: '连续降雨天气导致成品仓库湿度持续超过75%上限（实测82%），部分纸箱包装出现软化变形。涉及待发货成品约500件，存在客户拒收风险。现有除湿设备容量不足。', category:'quality', severity:'high', source:'incident', reporter:'秦库管', currentLevel:'T2', originLevel:'T1', status:'open', closeLevel:null, closedAt:null, closedBy:null, closeReason:null,
+      history: [
+        { timestamp:ago(130,3), action:'create', fromLevel:null, toLevel:'T1', operator:'秦库管', comment:'仓库温湿度异常，超过存储标准' },
+        { timestamp:ago(120,3), action:'escalate', fromLevel:'T1', toLevel:'T1P', operator:'尤班长', comment:'涉及多部门协调，需车间主任处理' },
+        { timestamp:ago(100,3), action:'escalate', fromLevel:'T1P', toLevel:'T2', operator:'许主任', comment:'需采购大功率除湿设备及评估产品返工方案' }
+      ],
+      comments: [
+        { id:'cmt-10', timestamp:ago(110,3), author:'秦库管', text:'已临时增加4台移动除湿机，湿度降至78%但仍超标' },
+        { id:'cmt-11', timestamp:ago(50,3), author:'许主任', text:'设备采购申请已提交，预计下周到货安装' }
+      ]
+    }
+  ];
+}
+
+// ==================== FILTER & SORT ENGINE ====================
+function getFilteredIssues() {
+  const s = Store.getState();
+  let issues = [...s.issues];
+  const f = s.filters;
+
+  if (f.search) {
+    const q = f.search.toLowerCase();
+    issues = issues.filter(i =>
+      i.title.toLowerCase().includes(q) ||
+      i.description.toLowerCase().includes(q) ||
+      i.id.toLowerCase().includes(q) ||
+      (i.reporter && i.reporter.toLowerCase().includes(q))
+    );
+  }
+  if (f.category) issues = issues.filter(i => i.category === f.category);
+  if (f.severity) issues = issues.filter(i => i.severity === f.severity);
+  if (f.level) issues = issues.filter(i => i.currentLevel === f.level);
+  if (f.status) issues = issues.filter(i => i.status === f.status);
+  if (f.dateFrom) issues = issues.filter(i => i.createdAt >= f.dateFrom);
+  if (f.dateTo) issues = issues.filter(i => i.createdAt <= f.dateTo + 'T23:59:59');
+
+  // Sort
+  issues.sort((a,b) => {
+    let va = a[s.sort.field], vb = b[s.sort.field];
+    if (va == null) va = '';
+    if (vb == null) vb = '';
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return s.sort.dir === 'asc' ? -1 : 1;
+    if (va > vb) return s.sort.dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  return issues;
+}
+
+function getPageSlice(issues) {
+  const s = Store.getState();
+  const start = (s.page - 1) * s.perPage;
+  return { slice: issues.slice(start, start + s.perPage), total: issues.length, totalPages: Math.ceil(issues.length / s.perPage) };
+}
+
+// ==================== TOAST ====================
+function showToast(msg, type) {
+  type = type || 'info';
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity .3s'; }, 2500);
+  setTimeout(() => toast.remove(), 2800);
+}
+
+// ==================== MODAL HELPERS ====================
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function closeAllModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hidden'));
+}
+
+// ==================== ROUTER ====================
+function navigate(view, detailId) {
+  Store.dispatch('NAVIGATE', { view, detailId });
+  render();
+}
+
+function handleHash() {
+  const hash = location.hash.replace('#','') || 'dashboard';
+  if (hash.startsWith('detail/')) {
+    navigate('detail', hash.split('/')[1]);
+  } else if (hash.startsWith('edit/')) {
+    navigate('edit', hash.split('/')[1]);
+  } else if (['dashboard','list','create'].includes(hash)) {
+    navigate(hash);
+  } else {
+    navigate('dashboard');
+  }
+}
+
+window.addEventListener('hashchange', handleHash);
+
+// ==================== NAVIGATION UI ====================
+function updateNavActive(view) {
+  document.querySelectorAll('#topNav a, #bottomNav .nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.nav === view);
+  });
+}
+
+// ==================== MAIN RENDER ====================
+function render() {
+  const s = Store.getState();
+  const container = document.getElementById('viewContainer');
+  updateNavActive(s.view);
+
+  switch (s.view) {
+    case 'dashboard': renderDashboard(container); break;
+    case 'list': renderIssueList(container); break;
+    case 'create': renderCreateForm(container); break;
+    case 'detail': renderIssueDetail(container, s.detailId); break;
+    case 'edit': renderEditForm(container, s.detailId); break;
+    default: renderDashboard(container);
+  }
+}
+
+// ==================== DASHBOARD VIEW ====================
+function renderDashboard(container) {
+  const issues = Store.getState().issues;
+  const openCount = issues.filter(i => i.status === 'open').length;
+  const closedCount = issues.filter(i => i.status === 'closed').length;
+  const escalatedCount = issues.filter(i => i.currentLevel !== i.originLevel && i.status === 'open').length;
+  const criticalCount = issues.filter(i => i.severity === 'critical' && i.status === 'open').length;
+
+  // Issues by level
+  const levelCounts = {};
+  LEVELS.forEach(l => { levelCounts[l] = issues.filter(i => i.currentLevel === l && i.status === 'open').length; });
+  const maxLevelCount = Math.max(...Object.values(levelCounts), 1);
+
+  // Recent activity (last 15 history entries)
+  const allHistory = [];
+  issues.forEach(i => {
+    (i.history || []).forEach(h => {
+      allHistory.push({ ...h, issueId: i.id, issueTitle: i.title });
+    });
+  });
+  allHistory.sort((a,b) => b.timestamp.localeCompare(a.timestamp));
+  const recentActivity = allHistory.slice(0, 15);
+
+  let html = `
+    <div class="view">
+      <div class="flex-between mb-3">
+        <h1>📊 运营仪表盘</h1>
+        <div class="btn-group">
+          <button class="btn btn-outline btn-sm" onclick="navigate('create')">➕ 录入新问题</button>
+          <button class="btn btn-outline btn-sm" onclick="openModal('exportModal')">📦 导入/导出</button>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue">📋</div>
+          <div><div class="stat-value">${issues.length}</div><div class="stat-label">问题总数</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange">🔓</div>
+          <div><div class="stat-value">${openCount}</div><div class="stat-label">未闭环问题</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">✅</div>
+          <div><div class="stat-value">${closedCount}</div><div class="stat-label">已闭环问题</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">⬆️</div>
+          <div><div class="stat-value">${escalatedCount}</div><div class="stat-label">已升级问题</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red">🚨</div>
+          <div><div class="stat-value">${criticalCount}</div><div class="stat-label">紧急未闭环</div></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="form-row">
+        <!-- Issues by Level Chart -->
+        <div class="card">
+          <div class="card-header">📈 各级别未闭环问题分布</div>
+          <div class="card-body">
+            <div class="bar-chart">
+              ${LEVELS.map(l => `
+                <div class="bar-row">
+                  <div class="bar-label">${LEVEL_SHORT[l]}</div>
+                  <div class="bar-track">
+                    <div class="bar-fill ${l.toLowerCase()}" style="width:${(levelCounts[l]/maxLevelCount*100)||0}%">${levelCounts[l] > 0 ? levelCounts[l] : ''}</div>
+                  </div>
+                  <div class="bar-count">${levelCounts[l]}</div>
+                </div>
+              `).join('')}
+              ${maxLevelCount === 0 ? '<div class="empty-state"><p style="font-size:.85rem">暂无未闭环问题</p></div>' : ''}
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+          <div class="card-header">🕐 最近动态</div>
+          <div class="card-body">
+            ${recentActivity.length === 0 ? '<div class="empty-state"><p style="font-size:.85rem">暂无操作记录</p></div>' : `
+            <div style="max-height:300px;overflow-y:auto">
+              ${recentActivity.map(h => `
+                <div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--gray-100);font-size:.8rem">
+                  <span style="color:var(--gray-400);flex-shrink:0">${formatDateTime(h.timestamp)}</span>
+                  <span class="badge badge-${h.action === 'create' ? 'open' : h.action === 'escalate' ? 't3' : h.action === 'close' ? 'closed' : 't2'}" style="flex-shrink:0;font-size:.65rem">${HISTORY_ACTION_LABELS[h.action]}</span>
+                  <a href="#detail/${h.issueId}" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem">${escapeHtml(h.issueTitle)}</a>
+                </div>
+              `).join('')}
+            </div>
+            `}
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  container.innerHTML = html;
+}
+
+// ==================== ISSUE LIST VIEW ====================
+function renderIssueList(container) {
+  const s = Store.getState();
+  const f = s.filters;
+  const filtered = getFilteredIssues();
+  const { slice, total, totalPages } = getPageSlice(filtered);
+
+  const sortIcon = (field) => {
+    if (s.sort.field !== field) return '<span class="sort-icon">⇅</span>';
+    return `<span class="sort-icon">${s.sort.dir === 'asc' ? '↑' : '↓'}</span>`;
+  };
+  const thClass = (field) => s.sort.field === field ? 'sorted' : '';
+
+  let html = `
+    <div class="view">
+      <div class="flex-between mb-3">
+        <h1>📋 问题列表 <span style="font-size:.85rem;color:var(--gray-400);font-weight:400">(共 ${total} 条)</span></h1>
+        <div class="btn-group">
+          <button class="btn btn-primary btn-sm" onclick="navigate('create')">➕ 录入新问题</button>
+          <button class="btn btn-outline btn-sm" onclick="openModal('exportModal')">📦 导入/导出</button>
+        </div>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="card mb-3">
+        <div class="card-body" style="padding:12px 16px">
+          <div class="filter-bar">
+            <input class="form-input search-input" type="text" placeholder="🔍 搜索标题/描述/编号/报告人..." value="${escapeHtml(f.search)}" oninput="handleFilterChange('search', this.value)" id="filterSearch">
+            <select class="form-select" onchange="handleFilterChange('category', this.value)" id="filterCategory">
+              <option value="">全部类别</option>
+              ${CATEGORIES.map(c => `<option value="${c}" ${f.category===c?'selected':''}>${CATEGORY_LABELS[c]}</option>`).join('')}
+            </select>
+            <select class="form-select" onchange="handleFilterChange('severity', this.value)" id="filterSeverity">
+              <option value="">全部严重度</option>
+              ${SEVERITIES.map(s => `<option value="${s}" ${f.severity===s?'selected':''}>${SEVERITY_LABELS[s]}</option>`).join('')}
+            </select>
+            <select class="form-select" onchange="handleFilterChange('level', this.value)" id="filterLevel">
+              <option value="">全部层级</option>
+              ${LEVELS.map(l => `<option value="${l}" ${f.level===l?'selected':''}>${LEVEL_LABELS[l]}</option>`).join('')}
+            </select>
+            <select class="form-select" onchange="handleFilterChange('status', this.value)" id="filterStatus">
+              <option value="">全部状态</option>
+              <option value="open" ${f.status==='open'?'selected':''}>未闭环</option>
+              <option value="closed" ${f.status==='closed'?'selected':''}>已闭环</option>
+            </select>
+            ${(f.search||f.category||f.severity||f.level||f.status) ? '<button class="btn btn-ghost btn-sm" onclick="resetFilters()">✕ 清除筛选</button>' : ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="card">
+        <div class="table-wrap">
+          ${slice.length === 0 ? `
+            <div class="empty-state">
+              <div class="empty-icon">🔍</div>
+              <p>没有找到匹配的问题记录</p>
+              ${(f.search||f.category||f.severity||f.level||f.status) ? '<button class="btn btn-outline btn-sm" onclick="resetFilters()">清除筛选条件</button>' : '<button class="btn btn-primary btn-sm" onclick="navigate(\'create\')">录入第一个问题</button>'}
+            </div>
+          ` : `
+          <table>
+            <thead>
+              <tr>
+                <th class="${thClass('id')}" onclick="handleSort('id')">编号 ${sortIcon('id')}</th>
+                <th style="min-width:180px">标题</th>
+                <th class="${thClass('category')}" onclick="handleSort('category')">类别 ${sortIcon('category')}</th>
+                <th class="${thClass('severity')}" onclick="handleSort('severity')">严重度 ${sortIcon('severity')}</th>
+                <th class="${thClass('currentLevel')}" onclick="handleSort('currentLevel')">当前层级 ${sortIcon('currentLevel')}</th>
+                <th class="${thClass('status')}" onclick="handleSort('status')">状态 ${sortIcon('status')}</th>
+                <th class="${thClass('createdAt')}" onclick="handleSort('createdAt')">创建时间 ${sortIcon('createdAt')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${slice.map(i => `
+                <tr class="clickable" onclick="navigate('detail','${i.id}')">
+                  <td><code style="font-size:.8rem;background:var(--gray-100);padding:2px 6px;border-radius:3px">${i.id}</code></td>
+                  <td class="truncate" style="max-width:200px" title="${escapeHtml(i.title)}">${escapeHtml(i.title)}</td>
+                  <td><span class="badge badge-t1">${CATEGORY_LABELS[i.category]}</span></td>
+                  <td><span class="badge badge-${i.severity}">${SEVERITY_LABELS[i.severity]}</span></td>
+                  <td><span class="badge badge-${i.currentLevel.toLowerCase()}">${LEVEL_LABELS[i.currentLevel]}</span></td>
+                  <td><span class="badge ${i.status==='closed'?'badge-closed':'badge-open'}">${i.status==='closed'?'已闭环':'未闭环'}</span></td>
+                  <td>${formatDate(i.createdAt)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          `}
+        </div>
+
+        ${totalPages > 1 ? `
+        <div class="pagination">
+          <button class="page-btn" onclick="goToPage(${s.page - 1})" ${s.page<=1?'disabled':''}>◀</button>
+          ${renderPageNumbers(s.page, totalPages)}
+          <button class="page-btn" onclick="goToPage(${s.page + 1})" ${s.page>=totalPages?'disabled':''}>▶</button>
+          <span class="page-info">第 ${s.page}/${totalPages} 页</span>
+        </div>
+        ` : ''}
+      </div>
+    </div>`;
+
+  container.innerHTML = html;
+}
+
+function renderPageNumbers(current, total) {
+  let pages = [];
+  const start = Math.max(1, current - 2);
+  const end = Math.min(total, current + 2);
+  for (let i = start; i <= end; i++) {
+    pages.push(`<button class="page-btn ${i === current ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`);
+  }
+  return pages.join('');
+}
+
+function goToPage(page) {
+  const { totalPages } = getPageSlice(getFilteredIssues());
+  if (page < 1 || page > totalPages) return;
+  Store.dispatch('PAGE_SET', page);
+  render();
+}
+
+function handleFilterChange(key, value) {
+  Store.dispatch('FILTER_SET', { [key]: value });
+  render();
+}
+
+function resetFilters() {
+  Store.dispatch('FILTER_RESET');
+  render();
+}
+
+function handleSort(field) {
+  Store.dispatch('SORT_SET', field);
+  render();
+}
+
+// ==================== CREATE ISSUE VIEW ====================
+function renderCreateForm(container, editData) {
+  const isEdit = !!editData;
+  const data = editData || {};
+
+  let html = `
+    <div class="view">
+      <div class="flex-between mb-3">
+        <h1>${isEdit ? '✏️ 编辑问题' : '➕ 录入新问题'}</h1>
+        <button class="btn btn-outline btn-sm" onclick="navigate('list')">← 返回列表</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">${isEdit ? '编辑问题信息' : '问题信息录入'}</div>
+        <div class="card-body">
+          <form id="issueForm" onsubmit="handleSubmit(event, ${isEdit})">
+            ${isEdit ? `<input type="hidden" id="editId" value="${data.id}">` : ''}
+
+            <div class="form-group">
+              <label class="form-label">问题标题 <span class="required">*</span></label>
+              <input class="form-input" id="formTitle" value="${escapeHtml(data.title||'')}" placeholder="请简要描述问题，例如：A线3#传送带电机过热" maxlength="100">
+              <div class="form-error" id="errTitle">请输入问题标题（至少2个字符）</div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">问题类别 <span class="required">*</span></label>
+                <select class="form-select" id="formCategory">
+                  <option value="">请选择类别</option>
+                  ${CATEGORIES.map(c => `<option value="${c}" ${data.category===c?'selected':''}>${CATEGORY_LABELS[c]}</option>`).join('')}
+                </select>
+                <div class="form-error" id="errCategory">请选择问题类别</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">严重程度 <span class="required">*</span></label>
+                <select class="form-select" id="formSeverity">
+                  <option value="">请选择严重程度</option>
+                  ${SEVERITIES.map(s => `<option value="${s}" ${data.severity===s?'selected':''}>${SEVERITY_LABELS[s]}</option>`).join('')}
+                </select>
+                <div class="form-error" id="errSeverity">请选择严重程度</div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">问题来源 <span class="required">*</span></label>
+                <select class="form-select" id="formSource">
+                  <option value="">请选择来源</option>
+                  ${SOURCES.map(s => `<option value="${s}" ${data.source===s?'selected':''}>${SOURCE_LABELS[s]}</option>`).join('')}
+                </select>
+                <div class="form-error" id="errSource">请选择问题来源</div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">初始层级 <span class="required">*</span></label>
+                <select class="form-select" id="formOriginLevel" ${isEdit?'disabled':''}>
+                  ${LEVELS.map(l => `<option value="${l}" ${(data.originLevel||data.currentLevel||'T1')===l?'selected':''}>${LEVEL_LABELS[l]}</option>`).join('')}
+                </select>
+                <div class="form-hint">${isEdit ? '编辑模式下不可修改初始层级' : '问题首次录入的层级，通常为 T1 班组'}</div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">报告人 <span class="required">*</span></label>
+              <input class="form-input" id="formReporter" value="${escapeHtml(data.reporter||'')}" placeholder="请输入报告人姓名">
+              <div class="form-error" id="errReporter">请输入报告人姓名</div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">问题描述 <span class="required">*</span></label>
+              <textarea class="form-textarea" id="formDescription" rows="4" placeholder="请详细描述问题情况，包括：发生时间、地点、现象、影响范围、初步判断等...">${escapeHtml(data.description||'')}</textarea>
+              <div class="form-error" id="errDescription">请输入问题描述（至少5个字符）</div>
+            </div>
+
+            <div class="btn-group mt-3">
+              <button type="submit" class="btn btn-primary btn-lg">${isEdit ? '💾 保存修改' : '✅ 提交问题'}</button>
+              <button type="button" class="btn btn-outline btn-lg" onclick="navigate('list')">取消</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>`;
+
+  container.innerHTML = html;
+}
+
+function handleSubmit(e, isEdit) {
+  e.preventDefault();
+  let valid = true;
+
+  const title = document.getElementById('formTitle').value.trim();
+  const category = document.getElementById('formCategory').value;
+  const severity = document.getElementById('formSeverity').value;
+  const source = document.getElementById('formSource').value;
+  const reporter = document.getElementById('formReporter').value.trim();
+  const description = document.getElementById('formDescription').value.trim();
+  const originLevel = document.getElementById('formOriginLevel')?.value || 'T1';
+
+  // Validation
+  document.querySelectorAll('.form-error').forEach(el => el.classList.remove('show'));
+  if (title.length < 2) { document.getElementById('errTitle').classList.add('show'); valid = false; }
+  if (!category) { document.getElementById('errCategory').classList.add('show'); valid = false; }
+  if (!severity) { document.getElementById('errSeverity').classList.add('show'); valid = false; }
+  if (!source) { document.getElementById('errSource').classList.add('show'); valid = false; }
+  if (reporter.length < 2) { document.getElementById('errReporter').classList.add('show'); valid = false; }
+  if (description.length < 5) { document.getElementById('errDescription').classList.add('show'); valid = false; }
+  if (!valid) return;
+
+  if (isEdit) {
+    const id = document.getElementById('editId').value;
+    const existing = Store.getState().issues.find(i => i.id === id);
+    if (!existing) return;
+
+    const updated = {
+      ...existing,
+      title, category, severity, source, reporter, description,
+      history: [...existing.history, {
+        timestamp: nowISO(),
+        action: 'edit',
+        fromLevel: existing.currentLevel,
+        toLevel: existing.currentLevel,
+        operator: reporter,
+        comment: '编辑问题信息'
+      }]
+    };
+    Store.dispatch('ISSUE_UPDATE', updated);
+    showToast('问题已更新', 'success');
+    navigate('detail', id);
+  } else {
+    const now = nowISO();
+    const issue = {
+      id: generateIssueId(),
+      createdAt: now,
+      title,
+      description,
+      category,
+      severity,
+      source,
+      reporter,
+      currentLevel: originLevel,
+      originLevel,
+      status: 'open',
+      closeLevel: null,
+      closedAt: null,
+      closedBy: null,
+      closeReason: null,
+      history: [{
+        timestamp: now,
+        action: 'create',
+        fromLevel: null,
+        toLevel: originLevel,
+        operator: reporter,
+        comment: `问题创建于 ${LEVEL_LABELS[originLevel]}`
+      }],
+      comments: []
+    };
+    Store.dispatch('ISSUE_CREATE', issue);
+    showToast('问题录入成功', 'success');
+    navigate('detail', issue.id);
+  }
+}
+
+function renderEditForm(container, id) {
+  const issue = Store.getState().issues.find(i => i.id === id);
+  if (!issue) { navigate('list'); return; }
+  renderCreateForm(container, issue);
+}
+
+// ==================== ISSUE DETAIL VIEW ====================
+function renderIssueDetail(container, id) {
+  const issue = Store.getState().issues.find(i => i.id === id);
+  if (!issue) { container.innerHTML = '<div class="empty-state"><div class="empty-icon">❓</div><p>问题不存在</p><button class="btn btn-primary btn-sm" onclick="navigate(\'list\')">返回列表</button></div>'; return; }
+
+  const canEscalate = issue.status === 'open' && NEXT_LEVEL[issue.currentLevel] !== null;
+  const canClose = issue.status === 'open';
+  const canReopen = issue.status === 'closed';
+  const nextLevel = NEXT_LEVEL[issue.currentLevel];
+
+  let html = `
+    <div class="view">
+      <!-- Detail Header -->
+      <div class="detail-header">
+        <button class="back-btn" onclick="navigate('list')">← 返回列表</button>
+        <div class="detail-id">${issue.id}</div>
+        <div class="detail-title">${escapeHtml(issue.title)}</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="detail-actions">
+        <button class="btn btn-outline btn-sm" onclick="navigate('edit','${issue.id}')">✏️ 编辑</button>
+        ${canEscalate ? `<button class="btn btn-warning btn-sm" onclick="openEscalateModal('${issue.id}')">⬆️ 升级至 ${LEVEL_LABELS[nextLevel]}</button>` : ''}
+        ${canClose ? `<button class="btn btn-success btn-sm" onclick="openCloseModal('${issue.id}')">✅ 本级闭环</button>` : ''}
+        ${canReopen ? `<button class="btn btn-outline btn-sm" onclick="openReopenConfirm('${issue.id}')">🔓 重新打开</button>` : ''}
+        ${!canEscalate && issue.status === 'open' && !nextLevel ? '<span class="badge badge-t4" style="font-size:.8rem">已达最高层级 T4</span>' : ''}
+      </div>
+
+      <!-- Info Card -->
+      <div class="card mb-3">
+        <div class="card-header">📋 问题信息</div>
+        <div class="card-body">
+          <div class="info-grid">
+            <div class="info-item"><div class="info-label">当前状态</div><div class="info-value"><span class="badge ${issue.status==='closed'?'badge-closed':'badge-open'}">${issue.status==='closed'?'已闭环':'未闭环'}</span></div></div>
+            <div class="info-item"><div class="info-label">当前层级</div><div class="info-value"><span class="badge badge-${issue.currentLevel.toLowerCase()}">${LEVEL_LABELS[issue.currentLevel]}</span></div></div>
+            <div class="info-item"><div class="info-label">初始层级</div><div class="info-value">${LEVEL_LABELS[issue.originLevel]}</div></div>
+            <div class="info-item"><div class="info-label">问题类别</div><div class="info-value"><span class="badge badge-t1">${CATEGORY_LABELS[issue.category]}</span></div></div>
+            <div class="info-item"><div class="info-label">严重程度</div><div class="info-value"><span class="badge badge-${issue.severity}">${SEVERITY_LABELS[issue.severity]}</span></div></div>
+            <div class="info-item"><div class="info-label">问题来源</div><div class="info-value">${SOURCE_LABELS[issue.source]}</div></div>
+            <div class="info-item"><div class="info-label">报告人</div><div class="info-value">${escapeHtml(issue.reporter)}</div></div>
+            <div class="info-item"><div class="info-label">创建时间</div><div class="info-value">${formatDateTime(issue.createdAt)}</div></div>
+            ${issue.status === 'closed' ? `
+            <div class="info-item"><div class="info-label">闭环时间</div><div class="info-value" style="color:var(--success)">${formatDateTime(issue.closedAt)}</div></div>
+            <div class="info-item"><div class="info-label">闭环层级</div><div class="info-value"><span class="badge badge-${(issue.closeLevel||'').toLowerCase()}">${LEVEL_LABELS[issue.closeLevel] || '-'}</span></div></div>
+            <div class="info-item"><div class="info-label">闭环操作人</div><div class="info-value">${escapeHtml(issue.closedBy||'-')}</div></div>
+            <div class="info-item"><div class="info-label">闭环原因</div><div class="info-value" style="font-size:.85rem">${escapeHtml(issue.closeReason||'-')}</div></div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="card mb-3">
+        <div class="card-header">📝 问题描述</div>
+        <div class="card-body">
+          <p style="white-space:pre-wrap;font-size:.9rem;line-height:1.7">${escapeHtml(issue.description)}</p>
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <div class="card mb-3">
+        <div class="card-header">💬 评论 (${(issue.comments||[]).length})</div>
+        <div class="card-body">
+          <div class="comment-list">
+            ${(issue.comments||[]).length === 0 ? '<div class="empty-state"><p style="font-size:.85rem">暂无评论</p></div>' : ''}
+            ${(issue.comments||[]).map(c => `
+              <div class="comment-item">
+                <div class="cmt-header">
+                  <span class="cmt-author">👤 ${escapeHtml(c.author)}</span>
+                  <span class="cmt-time">${formatDateTime(c.timestamp)}</span>
+                </div>
+                <div class="cmt-text">${escapeHtml(c.text)}</div>
+              </div>
+            `).join('')}
+          </div>
+          <form onsubmit="addComment(event, '${issue.id}')" style="display:flex;gap:8px">
+            <input class="form-input" id="commentAuthor" placeholder="姓名" style="width:100px;flex-shrink:0" required>
+            <input class="form-input" id="commentText" placeholder="添加评论..." style="flex:1" required>
+            <button type="submit" class="btn btn-primary btn-sm">发送</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Lifecycle Timeline -->
+      <div class="card">
+        <div class="card-header">🕐 全生命周期追溯</div>
+        <div class="card-body">
+          ${(issue.history||[]).length === 0 ? '<div class="empty-state"><p style="font-size:.85rem">暂无记录</p></div>' : `
+          <div class="timeline">
+            ${[...(issue.history||[])].reverse().map(h => `
+              <div class="timeline-item">
+                <div class="timeline-dot ${h.action}"></div>
+                <div class="timeline-time">${formatDateTime(h.timestamp)}</div>
+                <div class="timeline-content">
+                  <div class="tl-action">${HISTORY_ACTION_LABELS[h.action]} ${h.action === 'escalate' ? `: ${h.fromLevel} → ${h.toLevel}` : ''}</div>
+                  ${h.operator ? `<div class="tl-detail">操作人: ${escapeHtml(h.operator)}</div>` : ''}
+                  ${h.comment ? `<div class="tl-detail">${escapeHtml(h.comment)}</div>` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          `}
+        </div>
+      </div>
+    </div>`;
+
+  container.innerHTML = html;
+}
+
+// ==================== ACTIONS ====================
+let _escalateIssueId = null;
+let _closeIssueId = null;
+let _confirmCallback = null;
+
+function openEscalateModal(id) {
+  _escalateIssueId = id;
+  const issue = Store.getState().issues.find(i => i.id === id);
+  if (!issue) return;
+  const next = NEXT_LEVEL[issue.currentLevel];
+  document.getElementById('escalateInfo').innerHTML = `
+    将问题 <span class="confirm-highlight">${escapeHtml(issue.title)}</span>
+    从 <span class="confirm-highlight">${LEVEL_LABELS[issue.currentLevel]}</span>
+    升级至 <span class="confirm-highlight">${LEVEL_LABELS[next]}</span>
+  `;
+  document.getElementById('escalateComment').value = '';
+  document.getElementById('escalateOperator').value = '';
+  document.getElementById('escalateError').classList.remove('show');
+  document.getElementById('escalateOpError').classList.remove('show');
+  openModal('escalateModal');
+}
+
+function openCloseModal(id) {
+  _closeIssueId = id;
+  const issue = Store.getState().issues.find(i => i.id === id);
+  if (!issue) return;
+  document.getElementById('closeInfo').innerHTML = `
+    将在 <span class="confirm-highlight">${LEVEL_LABELS[issue.currentLevel]}</span> 层级
+    闭环问题 <span class="confirm-highlight">${escapeHtml(issue.title)}</span>
+  `;
+  document.getElementById('closeReason').value = '';
+  document.getElementById('closeOperator').value = '';
+  document.getElementById('closeError').classList.remove('show');
+  document.getElementById('closeOpError').classList.remove('show');
+  openModal('closeModal');
+}
+
+function confirmEscalate() {
+  const comment = document.getElementById('escalateComment').value.trim();
+  const operator = document.getElementById('escalateOperator').value.trim();
+  let valid = true;
+  document.getElementById('escalateError').classList.remove('show');
+  document.getElementById('escalateOpError').classList.remove('show');
+  if (!comment) { document.getElementById('escalateError').classList.add('show'); valid = false; }
+  if (!operator) { document.getElementById('escalateOpError').classList.add('show'); valid = false; }
+  if (!valid) return;
+
+  const issue = Store.getState().issues.find(i => i.id === _escalateIssueId);
+  if (!issue) return;
+  const next = NEXT_LEVEL[issue.currentLevel];
+  if (!next) return;
+
+  const updated = {
+    ...issue,
+    currentLevel: next,
+    history: [...issue.history, {
+      timestamp: nowISO(),
+      action: 'escalate',
+      fromLevel: issue.currentLevel,
+      toLevel: next,
+      operator,
+      comment
+    }]
+  };
+  Store.dispatch('ISSUE_UPDATE', updated);
+  closeModal('escalateModal');
+  showToast(`问题已升级至 ${LEVEL_LABELS[next]}`, 'success');
+  navigate('detail', _escalateIssueId);
+}
+
+function confirmClose() {
+  const reason = document.getElementById('closeReason').value.trim();
+  const operator = document.getElementById('closeOperator').value.trim();
+  let valid = true;
+  document.getElementById('closeError').classList.remove('show');
+  document.getElementById('closeOpError').classList.remove('show');
+  if (!reason) { document.getElementById('closeError').classList.add('show'); valid = false; }
+  if (!operator) { document.getElementById('closeOpError').classList.add('show'); valid = false; }
+  if (!valid) return;
+
+  const issue = Store.getState().issues.find(i => i.id === _closeIssueId);
+  if (!issue) return;
+  const now = nowISO();
+
+  const updated = {
+    ...issue,
+    status: 'closed',
+    closeLevel: issue.currentLevel,
+    closedAt: now,
+    closedBy: operator,
+    closeReason: reason,
+    history: [...issue.history, {
+      timestamp: now,
+      action: 'close',
+      fromLevel: issue.currentLevel,
+      toLevel: null,
+      operator,
+      comment: `问题在 ${LEVEL_LABELS[issue.currentLevel]} 层级闭环，原因：${reason}`
+    }]
+  };
+  Store.dispatch('ISSUE_UPDATE', updated);
+  closeModal('closeModal');
+  showToast('问题已闭环', 'success');
+  navigate('detail', _closeIssueId);
+}
+
+function openReopenConfirm(id) {
+  _confirmCallback = () => {
+    const issue = Store.getState().issues.find(i => i.id === id);
+    if (!issue) return;
+    const revertLevel = issue.closeLevel || issue.originLevel;
+    const updated = {
+      ...issue,
+      status: 'open',
+      currentLevel: revertLevel,
+      closeLevel: null,
+      closedAt: null,
+      closedBy: null,
+      closeReason: null,
+      history: [...issue.history, {
+        timestamp: nowISO(),
+        action: 'reopen',
+        fromLevel: null,
+        toLevel: revertLevel,
+        operator: '系统操作',
+        comment: `问题重新打开，恢复至 ${LEVEL_LABELS[revertLevel]} 层级`
+      }]
+    };
+    Store.dispatch('ISSUE_UPDATE', updated);
+    showToast('问题已重新打开', 'info');
+    navigate('detail', id);
+    closeModal('confirmModal');
+  };
+  const issue = Store.getState().issues.find(i => i.id === id);
+  document.getElementById('confirmTitle').textContent = '确认重新打开';
+  document.getElementById('confirmText').innerHTML = `
+    确认重新打开问题 <span class="confirm-highlight">${escapeHtml(issue?.title||'')}</span>？<br>
+    问题将恢复至 <span class="confirm-highlight">${LEVEL_LABELS[issue?.closeLevel||issue?.originLevel||'T1']}</span> 层级，状态变为未闭环。
+  `;
+  openModal('confirmModal');
+}
+
+function addComment(e, issueId) {
+  e.preventDefault();
+  const author = document.getElementById('commentAuthor').value.trim();
+  const text = document.getElementById('commentText').value.trim();
+  if (!author || !text) return;
+
+  const issue = Store.getState().issues.find(i => i.id === issueId);
+  if (!issue) return;
+  const now = nowISO();
+  const comment = { id: 'cmt-' + Date.now(), timestamp: now, author, text };
+  const updated = {
+    ...issue,
+    comments: [...(issue.comments||[]), comment],
+    history: [...issue.history, {
+      timestamp: now,
+      action: 'comment',
+      fromLevel: null,
+      toLevel: null,
+      operator: author,
+      comment: text
+    }]
+  };
+  Store.dispatch('ISSUE_UPDATE', updated);
+  showToast('评论已添加', 'success');
+  render();
+}
+
+// ==================== EXPORT / IMPORT ====================
+function exportData() {
+  const data = JSON.stringify(Store.getState().issues, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `tank-battle-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('数据导出成功', 'success');
+}
+
+function importData(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) throw new Error('数据格式错误：应为数组');
+      // Basic validation
+      for (const item of data) {
+        if (!item.id || !item.title || !item.status) throw new Error('数据格式错误：缺少必要字段');
+      }
+      Store.dispatch('IMPORT_DATA', data);
+      showToast(`成功导入 ${data.length} 条记录`, 'success');
+      render();
+    } catch (err) {
+      showToast('导入失败: ' + err.message, 'error');
+    }
+    document.getElementById('importStatus').textContent = '';
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  _confirmCallback = () => {
+    Store.dispatch('CLEAR_ALL');
+    closeModal('confirmModal');
+    showToast('所有数据已清除', 'info');
+    navigate('dashboard');
+  };
+  document.getElementById('confirmTitle').textContent = '⚠️ 确认清除';
+  document.getElementById('confirmText').innerHTML = '确认清除<span class="confirm-highlight">所有问题数据</span>？<br>此操作不可恢复，建议先导出备份。';
+  openModal('confirmModal');
+}
+
+// ==================== EVENT DELEGATION ====================
+document.addEventListener('DOMContentLoaded', () => {
+  // Modal close buttons
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', function() {
+      closeModal(this.dataset.close);
+    });
+  });
+
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) closeModal(this.id);
+    });
+  });
+
+  // Escalate confirm
+  document.getElementById('confirmEscalate').addEventListener('click', confirmEscalate);
+
+  // Close confirm
+  document.getElementById('confirmClose').addEventListener('click', confirmClose);
+
+  // Confirm modal action
+  document.getElementById('confirmAction').addEventListener('click', () => {
+    if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; }
+  });
+
+  // Export/Import
+  document.getElementById('exportBtn').addEventListener('click', exportData);
+  document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+  document.getElementById('importFile').addEventListener('change', function() {
+    if (this.files[0]) {
+      document.getElementById('importStatus').textContent = '导入中...';
+      importData(this.files[0]);
+      this.value = '';
+    }
+  });
+  document.getElementById('clearAllBtn').addEventListener('click', clearAllData);
+
+  // Bottom nav
+  document.querySelectorAll('#bottomNav .nav-item').forEach(item => {
+    item.addEventListener('click', function() {
+      navigate(this.dataset.nav);
+    });
+  });
+
+  // Keyboard shortcut: Escape closes modals
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeAllModals();
+  });
+
+  // Initialize
+  Store.load();
+  Store.subscribe(() => {
+    // Re-render is called explicitly by action handlers
+  });
+  handleHash();
+});
+</script>
+
+</body>
+</html>
